@@ -1190,7 +1190,7 @@ new_height, new_width");
             throw new NotImplementedException("");
         }
 
-        public static (Tensor begin, Tensor size, Tensor bboxes) sample_distorted_bounding_box(Tensor image_size, Tensor bounding_boxes, int seed = 0,
+        public static (Tensor begin, Tensor size, Tensor bboxes) sample_distorted_bounding_box_v2(Tensor image_size, Tensor bounding_boxes, int seed = 0,
             Tensor min_object_covered = null, float[] aspect_ratio_range = null, float[] area_range = null, int max_attempts = 100,
             bool use_image_if_no_bounding_boxes = false, string name = null)
         {
@@ -1214,18 +1214,10 @@ new_height, new_width");
                                                 use_image_if_no_bounding_boxes, name);
         }
 
-        public static (Tensor begin, Tensor size, Tensor bboxes) sample_distorted_bounding_box(Tensor image_size, Tensor bounding_boxes, int? seed = 0, int? seed2 = 0,
+        internal static (Tensor begin, Tensor size, Tensor bboxes) sample_distorted_bounding_box(Tensor image_size, Tensor bounding_boxes, int? seed = 0, int? seed2 = 0,
             Tensor min_object_covered = null, float[] aspect_ratio_range = null, float[] area_range = null, int max_attempts = 100,
             bool use_image_if_no_bounding_boxes = false, string name = null)
         {
-            // set default values that couldn't be set in function declaration, if necessary
-            if (min_object_covered == null)
-                min_object_covered = ops.convert_to_tensor(0.1);
-            if (aspect_ratio_range == null)
-                aspect_ratio_range = new float[] {0.75f, 1.33f};
-            if (area_range == null)
-                area_range = new float[] {0.05f, 1f};
-            
             return tf_with(ops.name_scope(name, "sample_distorted_bounding_box"), delegate
             {
                 return gen_ops.sample_distorted_bounding_box_v2(
