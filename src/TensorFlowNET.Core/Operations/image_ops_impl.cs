@@ -2066,7 +2066,12 @@ new_height, new_width");
         internal static (Tensor, Tensor) non_max_suppression_padded_v1(Tensor boxes, Tensor scores, Tensor max_output_size, float iou_threshold = 0.5f,
             float score_threshold = -1f / 0f, bool pad_to_max_output_size = false, string name = null)
         {
-            throw new NotImplementedException("");
+            return tf_with(ops.name_scope(name, "non_max_supression_padded"), delegate
+            {
+                var iou_threshold_tensor = ops.convert_to_tensor(iou_threshold, name: "iou_threshold");
+                var score_threshold_tensor = ops.convert_to_tensor(score_threshold, name: "score_threshold");
+                return gen_ops.non_max_suppression_v4(boxes, scores, max_output_size, iou_threshold_tensor, score_threshold_tensor, pad_to_max_output_size);
+            });
         }
 
         public static Tensor is_jpeg(Tensor contents, string name = null)
@@ -2094,25 +2099,59 @@ new_height, new_width");
             string name = null)
         {
             image = ops.convert_to_tensor(image, name: "image");
-            // dtype = dtype.as_dtype(dtype);
+            // var tf_dtype = dtypes.as_dtype(dtype);
             if (!dtype.is_floating() && !dtype.is_integer())
                 throw new TypeError("dtype must be either floating point or integer");
             if (dtype == image.dtype)
                 return array_ops.identity(image, name: name);
 
-            /*
+            // declarations for later
+            Tensor cast;
+
             return tf_with(ops.name_scope(name, "convert_image", new [] {image}), name =>
             {
                 if (image.dtype.is_integer() && dtype.is_integer())
                 {
                     var scale_in = image.dtype.max();
                     var scale_out = dtype.max();
+                    if (scale_in > scale_out)
+                    {
+                        var scale = Math.Floor((decimal)(scale_in + 1) / (scale_out + 1));
+                        var scaled = math_ops.floordiv(image, ops.convert_to_tensor(scale));
 
-                    
+                        if (saturate)
+                            return math_ops.saturate_cast(scaled, dtype, name: name);
+                        else 
+                            return math_ops.cast(scaled, dtype, name: name);
+                    } else
+                    {
+                        if (saturate)
+                            cast = math_ops.saturate_cast(image, dtype);
+                        else
+                            cast = math_ops.cast(image, dtype);
+                        var scale = Math.Floor((decimal)(scale_in + 1) / (scale_out + 1));
+                        return math_ops.multiply(cast, scale, name: name);
+                    }
+                } else if (image.dtype.is_floating() && dtype.is_floating())
+                    return math_ops.cast(image, dtype, name: name);
+                else
+                {
+                    if (image.dtype.is_integer())
+                    {
+                        cast = math_ops.cast(image, dtype);
+                        var scale = 1 / image.dtype.max();
+                        return math_ops.multiply(cast, scale, name: name);
+                    } else
+                    {
+                        var scale = dtype.max() + 0.5;
+                        var scaled = math_ops.multiply(image, scale);
+                        if (saturate)
+                            return math_ops.saturate_cast(scaled, dtype, name: name);
+                        else
+                            return math_ops.cast(scaled, dtype, name: name);
+                    }
                 }
             });
-            */
-            throw new NotImplementedException("");
         }
 
         /// <summary>
