@@ -128,6 +128,24 @@ namespace Tensorflow
                 return x;
             });
         }
+       
+        public static Tensor saturate_cast(Tensor value, TF_DataType dtype, string name = null)
+        {
+            return tf_with(ops.name_scope(name, "saturate_cast", new [] {value}), name =>
+            {
+                value = ops.convert_to_tensor(value, name: "value");
+                // dtype = dtypes.as_dtype(dtype).as_base_dtype();
+                if (value.dtype.min() < dtype.min())
+                    value = gen_math_ops.maximum(
+                        value,
+                        ops.convert_to_tensor(dtype.min(), dtype: value.dtype, name: "min"));
+                if (value.dtype.max() > dtype.max())
+                    value = gen_math_ops.minimum(
+                        value,
+                        ops.convert_to_tensor(dtype.max(), dtype: value.dtype, name: "max"));
+                return cast(value, dtype, name: name);
+            });
+        }
 
         public static Tensor cast(float x, TF_DataType dtype = TF_DataType.DtInvalid, string name = null)
         {
